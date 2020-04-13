@@ -68,7 +68,12 @@ def get_frame(cap, background_scaled):
 
     _, frame = cap.read()
 
+    frame = hologram_effect(frame)
+
+    return frame
+
     # fetch the mask with retries (the app needs to warmup and we're lazy)
+    # e v e n t u a l l y c o n s i s t e n t
 
     mask = None
     while mask is None:
@@ -104,7 +109,6 @@ cap.set(cv2.CAP_PROP_FPS, 60)
 fake = pyfakewebcam.FakeWebcam('/dev/video20', width, height)
 
 # load the virtual background
-#background = cv2.imread("/data/background.jpg")
 background = cv2.imread("background.jpg")
 background_scaled = cv2.resize(background, (width, height))
 
