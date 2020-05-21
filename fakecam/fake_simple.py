@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import requests
 import pyfakewebcam
-
+import time
 
 def get_mask(frame, bodypix_url='http://localhost:9000'):
 
@@ -72,29 +72,6 @@ def get_frame(cap, background_scaled):
 
     return frame
 
-    # fetch the mask with retries (the app needs to warmup and we're lazy)
-    # e v e n t u a l l y c o n s i s t e n t
-
-    mask = None
-    while mask is None:
-        try:
-            mask = get_mask(frame)
-        except:
-            print("mask request failed, retrying")
-
-    # post-process mask and frame
-    mask = post_process_mask(mask)
-    
-    frame = hologram_effect(frame)
-
-    # composite the foreground and background
-    inv_mask = 1-mask
-    for c in range(frame.shape[2]):
-        frame[:,:,c] = frame[:,:,c]*mask + background_scaled[:,:,c]*inv_mask
-
-    return frame
-
-
 # setup access to the *real* webcam
 
 cap = cv2.VideoCapture('/dev/video0')
@@ -102,7 +79,7 @@ cap = cv2.VideoCapture('/dev/video0')
 height, width = 720, 1280
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-cap.set(cv2.CAP_PROP_FPS, 60)
+cap.set(cv2.CAP_PROP_FPS, 5)
 
 
 # setup the fake camera
@@ -120,4 +97,8 @@ while True:
     # fake webcam expects RGB
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+    ts = time.gmtime()
+    ts_str = time.strftime("%H:%M:%S", ts)
+    print( ts_str, " schedule frame")
+    
     fake.schedule_frame(frame)
